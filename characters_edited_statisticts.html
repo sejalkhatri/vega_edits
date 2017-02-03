@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<head>
+  <title>Vega Contribution Statistics Chart</title>
+  <meta charset="utf-8">
+
+  <script src="//d3js.org/d3.v3.min.js"></script>
+  <script src="//vega.github.io/vega/vega.js"></script>
+  <script src="//vega.github.io/vega-editor/vendor/vega-embed.js", charset: "utf-8"></script>
+
+  <style media="screen">
+    /* Add space between vega-embed links  */
+    .vega-actions a {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Characters edited in a article stats</h1>
+  <!-- Container for the visualization -->
+  <div id="vis"></div>
+
+
+  <script>
+  // Assign the specification to a local variable vlSpec.
+  var vegaSpec = {
+    width: 500,
+    height: 300,
+    // //////////////////
+    // Scales and Axes //
+    // //////////////////
+    scales: [
+      {
+        name: 'x',
+        type: 'time',
+        domain: {
+          fields: [{
+            data: 'characters_added',
+            field: 'date',
+            sort: { field: 'date', op: 'min' }
+          }]
+        },
+        rangeMin: 0,
+        rangeMax: 500,
+        round: true
+      },
+      {
+        name: 'y',
+        type: 'linear',
+        domain: {
+          data: 'characters_added',
+          field: 'characters'
+        },
+        rangeMin: 300,
+        rangeMax: 0,
+        round: true,
+        nice: true,
+        zero: true
+      }
+    ],
+    axes: [
+      {
+        type: 'x',
+        scale: 'x',
+        grid: true,
+        layer: 'back',
+        ticks: 5,
+        title: 'Date',
+        properties: {
+          labels: {
+            text: { template: '{{datum["data"] | time:\'%b %d\'}}' },
+            angle: { value: 0 }
+          }
+        }
+      },
+      {
+        type: 'y',
+        scale: 'y',
+        format: 's',
+        grid: true,
+        layer: 'back',
+        offset: 10,
+        title: "characters added"
+      }
+    ],
+    // ///////////////
+    // Data Sources //
+    // ///////////////
+    data: [
+      {
+        name: 'characters_added',
+        values: [{"index":1,"rev_id":749020648,"wp10":24.3252,"date":"2016-11-11T21:17:19.000Z","username":"Tim198","characters":58},
+                 {"index":2,"rev_id":749021436,"wp10":25.5749,"date":"2016-11-11T21:24:34.000Z","username":"Tim198","characters":52},
+                 {"index":3,"rev_id":749032803,"wp10":6.48208,"date":"2016-11-11T23:06:44.000Z","username":"Tim198","characters":-1961},
+                 {"index":4,"rev_id":750612629,"wp10":10.0166,"date":"2016-11-20T20:57:48.000Z","username":"Tim198","characters":-15},
+                 {"index":5,"rev_id":751029174,"wp10":10.5216,"date":"2016-11-22T22:55:36.000Z","username":"Tim198","characters":55},
+                 {"index":6,"rev_id":751997858,"wp10":6.70416,"date":"2016-11-28T22:54:35.000Z","username":"Tim198","characters":-488},
+                 {"index":7,"rev_id":751998616,"wp10":10.5216,"date":"2016-11-28T23:00:24.000Z","username":"Tim198","characters":488},
+                 {"index":8,"rev_id":752154721,"wp10":6.64161,"date":"2016-11-29T20:10:11.000Z","username":"Tim198","characters":-528}],
+        format: { type: 'json', parse: { date: 'date', characters: 'number' } },
+        transform: [{
+          type: 'filter',
+          test: 'datum.date !== null && !isNaN(datum.date) && datum.characters!== null && !isNaN(datum.characters)'
+        }
+        ]
+      }
+    ],
+    // //////////////
+    // Mark layers //
+    // //////////////
+  marks: [
+    {
+      name: 'area_marks',
+      type: 'area',
+      from: {
+        data: 'characters_added',
+        transform: [{ type: 'sort', by: '-date' }]
+      },
+      properties: { enter: {
+        orient: { value: 'vertical' },
+        opacity: { value: 0.7 }
+      },
+        update: {  // the fill doesn't change with changing character field
+          x: { scale: 'x', field: 'date' },
+          y: { scale: 'y', field: 'characters' },
+          y2: { scale: 'y', value: 0 },
+          fill: [
+            {
+              test: "datum.characters > 0",  //to show characters added
+              value: 'blue'
+            },
+            { value: 'red' } // to show characters deleted
+          ]
+        }
+      }
+    }
+  ]
+  };
+  var embedSpec = {
+    mode: "vega",  // Instruct Vega-Embed to use the Vega compiler
+    spec: vegaSpec
+  };
+  // Embed the visualization in the container with id `vis`
+  vg.embed("#vis", embedSpec, function(error, result) {
+    // Callback receiving the View instance and parsed Vega spec
+    // result.view is the View, which resides under the '#vis' element
+  });
+  </script>
+</body>
+</html>
